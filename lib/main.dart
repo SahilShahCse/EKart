@@ -7,11 +7,21 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'firebase_options.dart';
+import 'package:flutter/services.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
+  );
+  SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+  SystemChrome.setSystemUIOverlayStyle(
+    const SystemUiOverlayStyle(
+      statusBarColor: Color(0xffededed), // Change the status bar color to white
+      statusBarIconBrightness: Brightness.dark, // Use dark icons for status bar
+      systemNavigationBarColor: Color(0xffededed), // Change the navigation bar color to white
+      systemNavigationBarIconBrightness: Brightness.dark, // Use dark icons for navigation bar
+    ),
   );
   runApp(
     App(),

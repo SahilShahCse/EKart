@@ -1,15 +1,11 @@
 import 'package:ecart/firebase/authentication_services.dart';
-import 'package:ecart/firebase/user_services.dart';
-import 'package:ecart/models/user_model.dart';
 import 'package:ecart/provider/user_provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:sign_in_button/sign_in_button.dart';
 
-
-import '../firebase/product_service.dart';
-import '../provider/product_provider.dart';
+import '../colors.dart';
 
 class AuthenticationScreen extends StatefulWidget {
   const AuthenticationScreen({Key? key}) : super(key: key);
@@ -22,98 +18,118 @@ class _AuthenticationScreenState extends State<AuthenticationScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Column(
-        children: [
-          _buildImageSection(),
-          _buildAuthenticationSection(),
-        ],
-      ),
-    );
-  }
-
-  // Image section
-  Widget _buildImageSection() {
-    return Expanded(
-      child: AspectRatio(
-        aspectRatio: 4 / 6,
-        child: Image.network(
-          'https://static.nike.com/a/images/t_PDP_1728_v1/f_auto,q_auto:eco/awjogtdnqxniqqk0wpgf/air-max-270-shoes-2V5C4p.png',
+      // backgroundColor: color3,
+      body: SafeArea(
+        child: Padding(
+          padding: EdgeInsets.all(25),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(height: 50),
+              Text('ShoeLand,' , style: TextStyle(color: color2 , fontWeight: FontWeight.w500 , fontSize: 28),),
+              Text(' Welcome\'s You...' , style: TextStyle( fontSize: 26),),
+              SizedBox(height: 120),
+              Text('"Find Your Perfect Pair at Shoe Land - Where Fashion Begins."' , textAlign: TextAlign.center,style: TextStyle(),),
+              _buildAuthenticationSectionWidget(),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  // Authentication section
-  Widget _buildAuthenticationSection() {
+
+  Widget _buildAuthenticationSectionWidget() {
     return Expanded(
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 50),
+        padding: const EdgeInsets.symmetric(horizontal: 10),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            _buildWelcomeText(), // Welcome text
-            const SizedBox(
-              height: 30,
+            SizedBox(height: 150),
+            _buildActionButtonsWidget(),
+            const SizedBox(height: 40 ),
+            Row(
+              children: [
+                Expanded(child: Container( height: 1, color: color3,margin: EdgeInsets.only(right: 10),)),
+                Text('Or else'),
+                Expanded(child: Container( height: 1, color: color3,margin: EdgeInsets.only(left: 10),)),
+              ],
             ),
-            _buildActionButtons(),
-            const SizedBox(height: 10),
+            const SizedBox(height: 10 ),
+
             SignInButton(
               Buttons.google,
-              onPressed: () async {
-                User? user = await AuthService().signInWithGoogle();
-                if (user != null) {
-                  UserProvider userProvider = Provider.of<UserProvider>(context,listen: false);
-                  userProvider.setUser(await userProvider.userService.getUserModel(user));
-                  Navigator.pushNamed(context, '/Home');
-                } else {
-                  print('error : ${user}');
-                }
-              },
-            ), // Google Sign-In button
+              onPressed: _handleGoogleSignIn,
+            ),
           ],
         ),
       ),
     );
   }
 
-  // Welcome text
-  Widget _buildWelcomeText() {
-    return Text(
-      'Welcome to EKart...',
-      style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
-    );
-  }
-
-  Widget _buildActionButtons() {
+  Widget _buildActionButtonsWidget() {
     return Column(
       children: <Widget>[
-        _buildElevatedButton(
-          backgroundColor: Color(0xff6d8df7),
+        _buildButton(
+          backgroundColor: color2,
           label: 'Login',
-          onPressed: () async {
-            Navigator.pushNamed(context, '/Home');
-          },
+          onPressed: _handleLogin,
         ),
-        _buildElevatedButton(
-          backgroundColor: Color(0xffff8b8b),
+        _buildButton(
+          backgroundColor: color1,
           label: 'Sign up',
-          onPressed: () async {
-            Navigator.pushNamed(context, '/Home');
-          },
+          onPressed: _handleSignUp,
         ),
       ],
     );
   }
 
-  Widget _buildElevatedButton({required String label, required VoidCallback onPressed, Color? backgroundColor}) {
-    return SizedBox(
-      width: double.infinity,
-      child: ElevatedButton(
-        onPressed: onPressed,
-        child: Text(label),
-        style: ElevatedButton.styleFrom(
-          backgroundColor: backgroundColor,
-        ),
-      ),
-    );
+  Widget _buildButton({required String label, required VoidCallback onPressed, Color? backgroundColor}) {
+    return
+      InkWell(
+        onTap: () {
+          onPressed();
+        },
+        child: Container(
+          margin: EdgeInsets.only(bottom: 10),
+          width: 250,
+          padding: EdgeInsets.symmetric(vertical: 13),
+          decoration: BoxDecoration(
+            color: backgroundColor, // Background color
+            borderRadius: BorderRadius.circular(25), // Rounded borders
+          ),
+          child: Center(
+            child: Text(
+              label,
+              style: TextStyle(
+                color: Colors.white, // Text color
+                fontSize: 16, // Text size
+              ),
+            ),
+          ),
+        ),);
+  }
+  void _handleGoogleSignIn() async {
+    User? user = await AuthService().signInWithGoogle();
+    if (user != null) {
+      UserProvider userProvider = Provider.of<UserProvider>(context, listen: false);
+      userProvider.setUser(await userProvider.userService.getUserModel(user));
+      Navigator.pushNamed(context, '/Home');
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text('Failed to sign in with Google'),
+      ));
+    }
+  }
+
+  void _handleLogin() {
+    // Implement your login functionality here
+    Navigator.pushNamed(context, '/Home');
+  }
+
+  void _handleSignUp() {
+    // Implement your sign-up functionality here
+    Navigator.pushNamed(context, '/Home');
   }
 }

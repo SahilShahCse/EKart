@@ -1,3 +1,4 @@
+import 'package:ecart/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:ecart/screens/checkout_screen.dart';
 import 'package:ecart/screens/profile_screen.dart';
@@ -11,13 +12,12 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  final PageController _pageController = PageController();
+  final PageController _pageController = PageController(initialPage: 0);
   int _currIndex = 0;
 
-
-  final List<Widget> _pages =  [
-     const ViewProductsScreen(),
-     const CheckoutScreen(),
+  final List<Widget> _pages = [
+    ViewProductsScreen(),
+    CheckoutScreen(),
     ProfileScreen(),
   ];
 
@@ -42,10 +42,6 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   @override
-  void initState() {
-    super.initState();
-  }
-  @override
   Widget build(BuildContext context) {
     return Scaffold(
       bottomNavigationBar: _getBottomNavigationBar(),
@@ -61,23 +57,23 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _getBottomNavigationBar() {
     return BottomNavigationBar(
+      selectedItemColor: color2,
       currentIndex: _currIndex,
       onTap: _onNavItemTapped,
       items: const [
         BottomNavigationBarItem(
           icon: Icon(Icons.home),
-          label: '',
+          label: 'Home',
         ),
         BottomNavigationBarItem(
           icon: Icon(Icons.shopping_cart),
-          label: '',
+          label: 'Checkout',
         ),
         BottomNavigationBarItem(
           icon: Icon(Icons.person),
-          label: '',
+          label: 'Profile',
         ),
       ],
     );
   }
-
 }

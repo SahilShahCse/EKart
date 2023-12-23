@@ -1,3 +1,4 @@
+
 import 'package:ecart/firebase/product_service.dart';
 import 'package:ecart/provider/user_provider.dart';
 import 'package:flutter/material.dart';
@@ -15,24 +16,73 @@ class ViewProductsScreen extends StatefulWidget {
 
 class _ViewProductsScreenState extends State<ViewProductsScreen> {
   List<ProductModel> list_of_product = [];
+  List<ProductModel> searchResults = [];
   bool didUserSearch = false;
   TextEditingController search = TextEditingController();
   UserModel? user;
+
   void setListfromProvider() {
     list_of_product = Provider.of<ProductProvider>(context, listen: false).products;
   }
 
   Future<void> setDataToProviderAndList() async {
-    Provider.of<ProductProvider>(context,listen: false).setProducts(await getProducts());
-    print('Data fetched');
+    if(Provider.of<ProductProvider>(context, listen: false).products!=null){
+      setListfromProvider();
+      return;
+    }
+    Provider.of<ProductProvider>(context, listen: false).setProducts(await getProducts());
     setListfromProvider();
   }
 
-  @override
+  void performSearch(String query) {
+    setState(() {
+      if (query.isEmpty) {
+        didUserSearch = false;
+        searchResults.clear();
+      } else {
+        didUserSearch = true;
+        searchResults = list_of_product
+            .where((product) =>
+            product.name.toLowerCase().contains(query.toLowerCase()))
+            .toList();
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    user = Provider.of<UserProvider>(context,listen: false).user;
-
+    user = Provider.of<UserProvider>(context, listen: false).user;
+    if(list_of_product!=null){
+      return Scaffold(
+        body: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _welcomeText(),
+                const SizedBox(height: 15),
+                searchBar(),
+                const SizedBox(height: 25),
+                Expanded(
+                  child: SingleChildScrollView(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        didUserSearch ? SizedBox() : _hotProducts(),
+                        _discoverText(),
+                        const SizedBox(height: 22),
+                        didUserSearch?_getSearchProduct() : _newProducts(),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
     return FutureBuilder(
       future: setDataToProviderAndList(),
       builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
@@ -69,7 +119,6 @@ class _ViewProductsScreenState extends State<ViewProductsScreen> {
     );
   }
 
-  // Widget for the "welcome" and user name text
   Widget _welcomeText() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -83,16 +132,19 @@ class _ViewProductsScreenState extends State<ViewProductsScreen> {
         ),
         Padding(
           padding: const EdgeInsets.only(left: 10, top: 5),
-          child: (user!=null)?(user!.name.isNotEmpty)?Text(
-            '${user!.name}!',
-            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
-          ) : SizedBox() : SizedBox(),
+          child: (user != null)
+              ? (user!.name.isNotEmpty)
+                  ? Text(
+                      '${user!.name}!',
+                      style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
+                    )
+                  : SizedBox()
+              : SizedBox(),
         ),
       ],
     );
   }
 
-  // Widget for the "Discover New Products..." text
   Widget _discoverText() {
     return didUserSearch
         ? Row(
@@ -118,7 +170,6 @@ class _ViewProductsScreenState extends State<ViewProductsScreen> {
           );
   }
 
-  // Widget for the search bar
   Widget searchBar() {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 15),
@@ -146,9 +197,7 @@ class _ViewProductsScreenState extends State<ViewProductsScreen> {
           ),
           InkWell(
             onTap: () async {
-              didUserSearch = true;
-              list_of_product = await searchProduct(search.text);
-              setState(() {});
+              performSearch(search.text);
             },
             child: Icon(Icons.search_rounded),
           ),
@@ -157,21 +206,6 @@ class _ViewProductsScreenState extends State<ViewProductsScreen> {
     );
   }
 
-  // Widget for the list of hot products
-  Widget _hotProducts() {
-    return Container(
-      height: 200, // Set a fixed height to constrain the ListView
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        itemCount: list_of_product.length,
-        itemBuilder: (BuildContext context, int index) {
-          return _hotProductItem(index);
-        },
-      ),
-    );
-  }
-
-  // Widget for each hot product item
   Widget _hotProductItem(int index) {
     final product = list_of_product[index];
     return InkWell(
@@ -217,25 +251,88 @@ class _ViewProductsScreenState extends State<ViewProductsScreen> {
     );
   }
 
-  // Widget for the list of new products
-  Widget _newProducts() {
-    return CustomScrollView(
-      physics: const NeverScrollableScrollPhysics(),
-      shrinkWrap: true,
-      slivers: <Widget>[
-        SliverList(
-          delegate: SliverChildBuilderDelegate(
-            (BuildContext context, int index) {
-              return _newProductItem(list_of_product[index]);
+  Widget _hotProducts() {
+    return FutureBuilder<List<ProductModel>>(
+        future: getProducts(), // Replace getHotProducts with your hot products fetching function
+        builder: (BuildContext context, AsyncSnapshot<List<ProductModel>> snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return CircularProgressIndicator(); // Show a loading indicator while waiting for data
+          } else if (snapshot.hasError) {
+            return Text('Error: ${snapshot.error}');
+          } else {
+            list_of_product = snapshot.data ?? []; // Update the list_of_product
+
+            if (list_of_product.isEmpty) {
+              return Text('No hot products found');
+            }
+
+            return Container(
+                height: 200,
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: list_of_product.length,
+                  itemBuilder: (BuildContext context, int index) {
+                    return _hotProductItem(index);
+                  },
+                ));
+          }
+        });
+  }
+
+  Widget _getSearchProduct() {
+    if (didUserSearch) {
+      if (searchResults.isNotEmpty) {
+        return ListView.builder(
+          shrinkWrap: true,
+          physics: NeverScrollableScrollPhysics(),
+            itemCount: searchResults.length,
+            itemBuilder: (BuildContext context, int index) {
+              return _newProductItem(searchResults[index]);
             },
-            childCount: list_of_product.length,
-          ),
-        ),
-      ],
+          );
+      } else {
+        return Center(child: Text('Item not found...'));
+      }
+    } else {
+      // If no search is performed, show an empty container
+      return SizedBox();
+    }
+  }
+
+  Widget _newProducts() {
+    return FutureBuilder<List<ProductModel>>(
+      future: getProducts(), // Replace getNewProducts with your new products fetching function
+      builder: (BuildContext context, AsyncSnapshot<List<ProductModel>> snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return CircularProgressIndicator(); // Show a loading indicator while waiting for data
+        } else if (snapshot.hasError) {
+          return Text('Error: ${snapshot.error}');
+        } else {
+          final newProducts = snapshot.data ?? [];
+
+          if (newProducts.isEmpty) {
+            return Text('No new products found');
+          }
+
+          return CustomScrollView(
+            physics: const NeverScrollableScrollPhysics(),
+            shrinkWrap: true,
+            slivers: <Widget>[
+              SliverList(
+                delegate: SliverChildBuilderDelegate(
+                  (BuildContext context, int index) {
+                    return _newProductItem(newProducts[index]);
+                  },
+                  childCount: newProducts.length,
+                ),
+              ),
+            ],
+          );
+        }
+      },
     );
   }
 
-  // Widget for each new product item
   Widget _newProductItem(ProductModel product) {
     return InkWell(
       onTap: () {
@@ -316,4 +413,5 @@ class _ViewProductsScreenState extends State<ViewProductsScreen> {
       ),
     );
   }
+
 }

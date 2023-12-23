@@ -1,8 +1,10 @@
+import 'package:ecart/colors.dart';
 import 'package:ecart/models/cart_model.dart';
 import 'package:ecart/provider/cart_provider.dart';
 import 'package:ecart/provider/user_provider.dart';
 import 'package:ecart/screens/home_screen.dart';
 import 'package:flutter/material.dart';
+import '../firebase/product_service.dart';
 import '../models/product_model.dart';
 import 'package:provider/provider.dart';
 
@@ -25,6 +27,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
 
   void setListfromProvider() {
     list_of_product = Provider.of<ProductProvider>(context, listen: false).products;
+    print(list_of_product.length);
   }
 
   @override
@@ -139,7 +142,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
           },
           style: ButtonStyle(
             backgroundColor: MaterialStateProperty.all<Color>(
-              selectedSize == size ? Color(0xff6d8df7) : Color(0xffff8b8b),
+              selectedSize == size ? color2 : color1,
             ),
           ),
           child: Text(size),
@@ -191,18 +194,21 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   Widget _buildBottomBar(int totalPrice) {
     return Container(
       padding: EdgeInsets.all(16),
-      color: Colors.white,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            isProductAddedToCart ? 'Added' : 'Total: \$${totalPrice.toStringAsFixed(2)}' , textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+
+          Padding(
+            padding: EdgeInsets.only(left: 15),
+            child: Text(
+              isProductAddedToCart ? 'Added' : 'Total: \$${totalPrice.toStringAsFixed(2)}' , textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
           ),
           ElevatedButton(
             onPressed: () {
               if (isProductAddedToCart){
-                Navigator.pop(context);
+                Navigator.pushNamed(context,'/Home');
              }
               else {
                 Provider.of<CartProvider>(context, listen: false)
@@ -212,7 +218,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
 
               setState(() {});
             },
-            style: ElevatedButton.styleFrom(backgroundColor: Color(0xff6d8df7)),
+            style: ElevatedButton.styleFrom(backgroundColor: color2),
             child: Row(
               children: [
                 isProductAddedToCart ? Icon(Icons.done_all) : Icon(Icons.shopping_cart), // Cart icon
@@ -241,17 +247,33 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   }
 
   Widget _hotProducts() {
-    return Container(
-      height: 200, // Set a fixed height to constrain the ListView
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        itemCount: list_of_product.length,
-        itemBuilder: (BuildContext context, int index) {
-          return _hotProductItem(index);
-        },
-      ),
-    );
+    return FutureBuilder<List<ProductModel>>(
+        future: getProducts(), // Replace getHotProducts with your hot products fetching function
+        builder: (BuildContext context, AsyncSnapshot<List<ProductModel>> snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return CircularProgressIndicator(); // Show a loading indicator while waiting for data
+          } else if (snapshot.hasError) {
+            return Text('Error: ${snapshot.error}');
+          } else {
+            list_of_product = snapshot.data ?? []; // Update the list_of_product
+
+            if (list_of_product.isEmpty) {
+              return Text('No hot products found');
+            }
+
+            return Container(
+                height: 200,
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: list_of_product.length,
+                  itemBuilder: (BuildContext context, int index) {
+                    return _hotProductItem(index);
+                  },
+                ));
+          }
+        });
   }
+
 
   // Widget for each hot product item
   Widget _hotProductItem(int index) {

@@ -5,6 +5,8 @@ import 'package:ecart/provider/product_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../colors.dart';
+
 class CheckoutScreen extends StatefulWidget {
   const CheckoutScreen({Key? key}) : super(key: key);
 
@@ -145,7 +147,6 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           return;
         }
         if (itemCount == 0) {
-          print('index ${index}');
           Provider.of<CartProvider>(context, listen: false).removeProduct(list_of_product[index]);
           setState(() {});
           return;
@@ -194,7 +195,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
           ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: Color(0xffff8b8b)),
+            style: ElevatedButton.styleFrom(backgroundColor: color2),
             onPressed: () {},
             child: Row(
               children: const [

@@ -30,9 +30,12 @@ Future<List<ProductModel>> searchProduct(String query) async {
         .where('name', isLessThan: query + 'z')
         .get();
 
+    print('Query Results: ${querySnapshot.docs.length}');
+
     return querySnapshot.docs.map((doc) => ProductModel.fromMap(doc.data())).toList();
   } catch (e) {
     print('Error searching for products: $e');
     return [];
   }
 }
+

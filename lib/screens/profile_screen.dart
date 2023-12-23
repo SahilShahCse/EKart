@@ -1,10 +1,9 @@
-import 'package:ecart/models/product_model.dart';
-import 'package:ecart/models/user_model.dart';
-import 'package:ecart/provider/user_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../provider/product_provider.dart';
+import '../colors.dart';
+import '../provider/user_provider.dart';
+import '../models/user_model.dart';
 
 class ProfileScreen extends StatefulWidget {
   @override
@@ -12,34 +11,42 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-
-  TextEditingController name = TextEditingController();
-  TextEditingController email = TextEditingController();
-  TextEditingController password = TextEditingController();
+  late TextEditingController name;
+  late TextEditingController email;
+  late TextEditingController password;
 
   @override
   void initState() {
     super.initState();
+    name = TextEditingController();
+    email = TextEditingController();
+    password = TextEditingController();
   }
 
   @override
   Widget build(BuildContext context) {
-
-
     return Scaffold(
-      body: (Provider.of<UserProvider>(context,listen: false).user!= null)?SafeArea(
-        child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 50),
-          child: _buildProfileContent(),
-        ),
-      ) : Center(child: Text('Login To Use This Page!'),)
+      body: (Provider.of<UserProvider>(context, listen: false).user != null)
+          ? SafeArea(
+              child: SingleChildScrollView(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 50),
+                  child: _buildProfileContent(),
+                ),
+              ),
+            )
+          : Center(
+              child: Text('Login To Use This Page!'),
+            ),
     );
   }
 
   Widget _buildProfileContent() {
     return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
       children: <Widget>[
+        SizedBox(
+          height: 100,
+        ),
         _buildProfilePicture(),
         SizedBox(height: 50),
         _buildUserId(),
@@ -63,29 +70,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _buildUserId() {
-    return const Text(
-      'User ID',
-      style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+    return Text(
+      'user-id : ${Provider.of<UserProvider>(context, listen: false).user!.id}',
+      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
     );
   }
 
   Widget _buildTextFields() {
-    UserModel? user = Provider.of<UserProvider>(context,listen: false).user;
-    print('${user}');
-
-    name.text = (user!.name.isEmpty)? '' : user!.name;
-    password.text = (user!.name.isEmpty)? '' : user!.password;
+    UserModel? user = Provider.of<UserProvider>(context, listen: false).user;
+    name.text = user!.name.isNotEmpty ? user.name : '';
+    password.text = user.password.isNotEmpty ? user.password : '';
 
     return Column(
       children: <Widget>[
-        _buildTextField(labelText: 'Name' , isEnabled: true, controller: name) ,
-        _buildTextField(labelText: user!.email, controller: email , isEnabled: false),
-        _buildTextField(labelText:'Password' , obscureText: true , controller: password ,isEnabled: true),
+        _buildTextField(labelText: 'Name', isEnabled: true, controller: name),
+        _buildTextField(labelText: 'Email : ${user.email}', controller: email, isEnabled: false),
+        _buildTextField(labelText: 'Password', obscureText: true, controller: password, isEnabled: true),
       ],
     );
   }
 
-  Widget _buildTextField({required String labelText, required bool isEnabled,required TextEditingController controller, bool obscureText = false}) {
+  Widget _buildTextField({required String labelText, required bool isEnabled, required TextEditingController controller, bool obscureText = false}) {
     return TextField(
       enabled: isEnabled,
       controller: controller,
@@ -99,40 +104,53 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget _buildActionButtons() {
     return Column(
       children: <Widget>[
-        _buildElevatedButton(
-          backgroundColor: Color(0xff6d8df7),
+        _buildButton(
+          backgroundColor: color1,
           label: 'Save Info',
-          onPressed: () {
-
-            UserProvider userProvider = Provider.of<UserProvider>(context,listen: false);
-            userProvider.user!.password = password.text.trim().isNotEmpty? password.text.trim() : userProvider.user!.password;
-            print(password.text);
-            userProvider.user!.name = name.text.trim().isNotEmpty? name.text.trim() : userProvider.user!.name;
-            userProvider.userService.updateUser(userProvider.user as UserModel);
-
-            setState(() {});
-          },
+          onPressed: _saveUserInfo,
         ),
-        _buildElevatedButton(
-
-          backgroundColor: Color(0xffff8b8b),
+        _buildButton(
+          backgroundColor: color2,
           label: 'Premium',
-          onPressed: () {
-            // Implement your "Premium" button functionality here
-          },
+          onPressed: _handlePremium,
         ),
       ],
     );
   }
 
-  Widget _buildElevatedButton({required String label, required VoidCallback onPressed, Color? backgroundColor}) {
-    return SizedBox(
-      width: double.infinity,
-      child: ElevatedButton(
-        onPressed: onPressed,
-        child: Text(label),
-        style: ElevatedButton.styleFrom(
-          backgroundColor: backgroundColor,
+  void _saveUserInfo() {
+    UserProvider userProvider = Provider.of<UserProvider>(context, listen: false);
+    userProvider.user!.password = password.text.trim().isNotEmpty ? password.text.trim() : userProvider.user!.password;
+    userProvider.user!.name = name.text.trim().isNotEmpty ? name.text.trim() : userProvider.user!.name;
+    userProvider.userService.updateUser(userProvider.user as UserModel);
+    setState(() {});
+  }
+
+  void _handlePremium() {
+    // Implement your "Premium" button functionality here
+  }
+
+  Widget _buildButton({required String label, required VoidCallback onPressed, Color? backgroundColor}) {
+    return InkWell(
+      onTap: () {
+        onPressed();
+      },
+      child: Container(
+        width: 250,
+        margin: EdgeInsets.only(bottom: 10),
+        padding: EdgeInsets.symmetric(vertical: 13),
+        decoration: BoxDecoration(
+          color: backgroundColor, // Background color
+          borderRadius: BorderRadius.circular(25), // Rounded borders
+        ),
+        child: Center(
+          child: Text(
+            label,
+            style: TextStyle(
+              color: Colors.white, // Text color
+              fontSize: 16, // Text size
+            ),
+          ),
         ),
       ),
     );
