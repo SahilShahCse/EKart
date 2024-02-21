@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:ecart/screens/home_screen.dart';
 import 'package:ecart/screens/product_detail_screen.dart';
-import 'package:ecart/screens/profile_screen.dart';
 import 'package:ecart/screens/authentication_screen.dart';
 import 'package:ecart/screens/checkout_screen.dart';
 
 import '../models/product_model.dart';
+import '../screens/profile/profile_page.dart';
 
 class NavigationController {
   static Route<dynamic>? getOnGenerateRoutes(RouteSettings settings) {

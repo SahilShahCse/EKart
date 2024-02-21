@@ -1,7 +1,7 @@
 import 'package:ecart/colors.dart';
+import 'package:ecart/screens/profile/profile_page.dart';
 import 'package:flutter/material.dart';
 import 'package:ecart/screens/checkout_screen.dart';
-import 'package:ecart/screens/profile_screen.dart';
 import 'package:ecart/screens/view_products_screen.dart';
 
 class HomeScreen extends StatefulWidget {

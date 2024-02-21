@@ -133,19 +133,23 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     return widget.product.availableSizesAndPrices.keys.map((size) {
       return Padding(
         padding: EdgeInsets.only(right: 8),
-        child: ElevatedButton(
-          onPressed: () {
+        child: InkWell(
+          onTap: () {
             isProductAddedToCart = false;
             selectedSize = size;
 
             setState(() {});
           },
-          style: ButtonStyle(
-            backgroundColor: MaterialStateProperty.all<Color>(
-              selectedSize == size ? color2 : color1,
+
+          child: Container(
+            padding: EdgeInsets.symmetric(vertical: 10 , horizontal: 25),
+            decoration: BoxDecoration(
+              color: selectedSize == size ? color2 : color1,
+              borderRadius: BorderRadius.circular(8),
             ),
+              child: Text(size , style: TextStyle(color: Colors.white),
+              ),
           ),
-          child: Text(size),
         ),
       );
     }).toList();
@@ -192,42 +196,50 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
 
   // Method to build the bottom bar
   Widget _buildBottomBar(int totalPrice) {
-    return Container(
-      padding: EdgeInsets.all(16),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-
-          Padding(
-            padding: EdgeInsets.only(left: 15),
-            child: Text(
-              isProductAddedToCart ? 'Added' : 'Total: \$${totalPrice.toStringAsFixed(2)}' , textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+    return SafeArea(
+      child: Container(
+        padding: EdgeInsets.all(16),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+      
+            Padding(
+              padding: EdgeInsets.only(left: 15),
+              child: Text(
+                isProductAddedToCart ? 'Added' : 'Total: \$${totalPrice.toStringAsFixed(2)}' , textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
             ),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              if (isProductAddedToCart){
-                Navigator.pushNamed(context,'/Home');
-             }
-              else {
-                Provider.of<CartProvider>(context, listen: false)
-                    .addProduct(CartModel(widget.product, selectedSize, widget.product.availableSizesAndPrices[selectedSize]!.toDouble(), selectedQuantity));
-                isProductAddedToCart = true;
-              }
-
-              setState(() {});
-            },
-            style: ElevatedButton.styleFrom(backgroundColor: color2),
-            child: Row(
-              children: [
-                isProductAddedToCart ? Icon(Icons.done_all) : Icon(Icons.shopping_cart), // Cart icon
-                SizedBox(width: 8),
-                isProductAddedToCart ? Text('Back to home page') : Text("Add to Cart"),
-              ],
-            ),
-          ),
-        ],
+            InkWell(
+                onTap: () {
+                  if (isProductAddedToCart){
+                    Navigator.pushNamed(context,'/Home');
+                 }
+                  else {
+                    Provider.of<CartProvider>(context, listen: false)
+                        .addProduct(CartModel(widget.product, selectedSize, widget.product.availableSizesAndPrices[selectedSize]!.toDouble(), selectedQuantity));
+                    isProductAddedToCart = true;
+                  }
+                    
+                  setState(() {});
+                },
+                child: Container(
+                  padding: EdgeInsets.symmetric(vertical: 10 , horizontal: 25),
+                  decoration: BoxDecoration(
+                    color: color2,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Row(
+                    children: [
+                      isProductAddedToCart ? Icon(Icons.done_all , color: Colors.white,) : Icon(Icons.shopping_cart , color: Colors.white,), // Cart icon
+                      SizedBox(width: 8),
+                      isProductAddedToCart ? Text('Back to home page',style: TextStyle(color: Colors.white),) : Text("Add to Cart",style: TextStyle(color: Colors.white),),
+                    ],
+                  ),
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }
@@ -273,7 +285,6 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
           }
         });
   }
-
 
   // Widget for each hot product item
   Widget _hotProductItem(int index) {

@@ -11,8 +11,11 @@ class UserProvider with ChangeNotifier {
   UserModel? get user => _user;
 
   // Setter to set the list of products
-  void setUser(UserModel user) {
+  void setUser(UserModel? user) {
     _user = user;
     notifyListeners();
   }
+
+
+
 }

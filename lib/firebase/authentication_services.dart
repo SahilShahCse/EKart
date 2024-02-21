@@ -30,10 +30,13 @@ class AuthService {
     }
   }
 
-
-
   Future<void> signOut() async {
-    await _auth.signOut();
-    await googleSignIn.signOut();
+    try {
+      await _auth.signOut();
+      await googleSignIn.signOut();
+      print("User signed out successfully.");
+    } catch (error) {
+      print("Error signing out: $error");
+    }
   }
 }

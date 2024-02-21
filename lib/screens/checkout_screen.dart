@@ -199,9 +199,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             onPressed: () {},
             child: Row(
               children: const [
-                Icon(Icons.payment), // Cart icon
+                Icon(Icons.payment,color: Colors.white,), // Cart icon
                 SizedBox(width: 20),
-                Text("Pay Now"),
+                Text("Pay Now",style: TextStyle(color: Colors.white),),
               ],
             ),
           ),
