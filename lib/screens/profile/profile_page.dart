@@ -2,7 +2,6 @@ import 'package:ecart/firebase/authentication_services.dart';
 import 'package:ecart/provider/user_provider.dart';
 import 'package:ecart/screens/profile/settings_page.dart';
 import 'package:ecart/screens/profile/subscription_page.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
